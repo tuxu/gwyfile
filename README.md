@@ -1,7 +1,10 @@
 gwyfile
 =======
 
+- Author: Tino Wagner <ich@tinowagner.com>
+
 A pure Python interface to reading and writing [Gwyddion][gwyddion] files.
+
 
 Usage
 -----
@@ -36,6 +39,7 @@ plt.show()
 
 The Gwyddion manual has a nice [description of the file format][gwyddion-file].
 See there for further information on object properties.
+
 
 Status
 ------
