@@ -25,7 +25,7 @@ obj = gwyfile.GwyObject.fromfile('test.gwy')
 # datafield objects as values.
 channels = gwyfile.util.get_datafields(obj)
 channel = channels['Test']
-# Datafield objects have an `get_data()` method to access their
+# Datafield objects have a `get_data()` method to access their
 # two-dimensional data as numpy arrays.
 data = channel.get_data()
 
