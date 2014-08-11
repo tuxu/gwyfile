@@ -3,7 +3,7 @@ def find_datafields(obj):
         data fields in ``obj``.
     """
     token = '/data/title'
-    channels = [int(k[1:-len(token)]) for k, v in obj.iteritems()
+    channels = [int(k[1:-len(token)]) for k, v in obj.items()
                 if k.endswith(token)]
     titles = [obj['/{}/data/title'.format(ch)] for ch in channels]
     return zip(channels, titles)

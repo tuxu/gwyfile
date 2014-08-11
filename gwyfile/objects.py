@@ -3,15 +3,18 @@
     See <http://gwyddion.net/documentation/user-guide-en/gwyfile-format.html>
     for a specification of Gwyddion native data files.
 """
+import sys
 import struct
 import numpy as np
 from collections import OrderedDict
-import StringIO
+
+from six import BytesIO
+from six.moves import range
 
 
 class GwyObject(OrderedDict):
     def __init__(self, name, data=None, types=None):
-        super(GwyObject, self).__init__()
+        OrderedDict.__init__(self)
         self.name = name
         # For each object attribute, we (optionally) store its type
         self.types = {}
@@ -23,7 +26,7 @@ class GwyObject(OrderedDict):
     def __repr__(self):
         return '<GwyObject "%s">(%s)' % (
             self.name,
-            ', '.join("'%s'" % k for k in self.iterkeys())
+            ', '.join("'%s'" % k for k in self.keys())
         )
 
     @classmethod
@@ -33,8 +36,8 @@ class GwyObject(OrderedDict):
         :param return_size: if ``True``, the size of the object within the
         buffer is returned as well.
         """
-        pos = buf.find('\0')
-        name = buf[:pos]
+        pos = buf.find(b'\0')
+        name = buf[:pos].decode('utf-8')
         size = struct.unpack('<I', buf[pos + 1:pos + 5])[0]
         object_data = buf[pos + 5:pos + 5 + size]
         buf = object_data
@@ -60,23 +63,28 @@ class GwyObject(OrderedDict):
     def fromfile(cls, filename):
         with open(filename, 'rb') as f:
             data = f.read()
-        assert(data[:4] == 'GWYP')
+        assert(data[:4] == b'GWYP')
         return cls.frombuffer(data[4:])
 
     def serialize(self):
-        io = StringIO.StringIO()
-        for k in self.iterkeys():
+        io = BytesIO()
+        for k in self.keys():
             try:
                 typecode = self.types[k]
             except KeyError:
                 typecode = None
             io.write(serialize_component(k, self[k], typecode))
         buf = io.getvalue()
-        return '%s\0%s%s' % (self.name, struct.pack('<I', len(buf)), buf)
+        return b''.join([
+            self.name.encode('utf-8'),
+            b'\0',
+            struct.pack('<I', len(buf)),
+            buf
+        ])
 
     def tofile(self, filename):
         with open(filename, 'wb') as f:
-            f.write('GWYP')
+            f.write(b'GWYP')
             f.write(self.serialize())
 
 
@@ -121,9 +129,9 @@ def component_from_buffer(buf, return_size=False):
     :param return_size: if ``True``, the size of the component within
     the buffer is returned as well.
     """
-    pos = buf.find('\0')
-    name = buf[:pos]
-    typecode = buf[pos + 1]
+    pos = buf.find(b'\0')
+    name = buf[:pos].decode('utf-8')
+    typecode = buf[pos+1:pos+2].decode('utf-8')
     pos += 2
     data = None
     endpos = pos
@@ -132,12 +140,12 @@ def component_from_buffer(buf, return_size=False):
         endpos += size
     elif typecode == 's':
         # NUL-terminated string
-        endpos = buf.find('\0', pos)
-        data = buf[pos:endpos]
+        endpos = buf.find(b'\0', pos)
+        data = buf[pos:endpos].decode('utf-8')
         endpos += 1
     elif typecode == 'b':
         # Boolean
-        data = ord(buf[pos]) != 0
+        data = ord(buf[pos:pos+1]) != 0
         endpos += 1
     elif typecode == 'c':
         data = buf[pos]
@@ -165,16 +173,16 @@ def component_from_buffer(buf, return_size=False):
         numitems = struct.unpack('<I', buf[pos:pos + 4])[0]
         endpos += 4
         data = []
-        for i in xrange(numitems):
+        for i in range(numitems):
             pos = endpos
-            endpos = buf.find('\0', pos)
-            data.append(buf[pos:endpos])
+            endpos = buf.find(b'\0', pos)
+            data.append(buf[pos:endpos].decode('utf-8'))
             endpos += 1
     elif typecode == 'O':
         numitems = struct.unpack('<I', buf[pos:pos + 4])[0]
         endpos += 4
         data = []
-        for i in xrange(numitems):
+        for i in range(numitems):
             pos = endpos
             objdata, size = GwyObject.frombuffer(buf[pos:], return_size=True)
             data.append(objdata)
@@ -220,19 +228,16 @@ def guess_typecode(value):
 
 
 def serialize_component(key, value, typecode=None):
-    io = StringIO.StringIO()
-    buf = io.getvalue()
-    struct.pack('<I', len(buf))
     if typecode is None:
         typecode = guess_typecode(value)
     if typecode == 'o':
         buf = value.serialize()
     elif typecode == 's':
-        buf = '%s\0' % value
+        buf = b''.join([value.encode('utf-8'), b'\0'])
     elif typecode == 'c':
-        buf = '%s' % value
+        buf = value.encode('utf-8')
     elif typecode == 'b':
-        buf = chr(value)
+        buf = chr(value).encode('utf-8')
     elif typecode in 'iqd':
         buf = struct.pack('<%s' % typecode, value)
     elif typecode in 'CIQD':
@@ -240,15 +245,19 @@ def serialize_component(key, value, typecode=None):
             'C': np.dtype('<S'), 'I': np.dtype('<i4'),
             'Q': np.dtype('<i8'), 'D': np.dtype('<f8')
         }
-        buf = '%s%s' % (
+        data = value.astype(typelookup[typecode]).data
+        buf = b''.join([
             struct.pack('<I', len(value)),
-            value.astype(typelookup[typecode]).data
-        )
+            data.tobytes() if sys.version > '3' else str(data)
+        ])
     elif typecode == 'S':
-        buf = '%s%s' % (
-            struct.pack('<I', len(value)),
-            ''.join(['%s\0' % s for s in value])
-        )
+        data = [struct.pack('<I', len(value)), ]
+        data += [s.encode('utf-8') + b'\0' for s in value]
+        buf = b''.join(data)
     else:
         raise NotImplementedError
-    return '%s\0%s%s' % (key, typecode, buf)
+    return b''.join([
+        key.encode('utf-8'), b'\0',
+        typecode.encode('utf-8'),
+        buf
+    ])
