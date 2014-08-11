@@ -3,7 +3,6 @@
     See <http://gwyddion.net/documentation/user-guide-en/gwyfile-format.html>
     for a specification of Gwyddion native data files.
 """
-import sys
 import struct
 import numpy as np
 from collections import OrderedDict
@@ -248,7 +247,7 @@ def serialize_component(key, value, typecode=None):
         data = value.astype(typelookup[typecode]).data
         buf = b''.join([
             struct.pack('<I', len(value)),
-            data.tobytes() if sys.version > '3' else str(data)
+            memoryview(data).tobytes()
         ])
     elif typecode == 'S':
         data = [struct.pack('<I', len(value)), ]
