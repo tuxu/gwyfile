@@ -194,6 +194,9 @@ def component_from_buffer(buf, return_size=False):
 
 
 def guess_typecode(value):
+    if np.isscalar(value) and hasattr(value, 'item'):
+        # Seems to be a numpy type -- convert
+        value = value.item()
     if isinstance(value, GwyObject):
         return 'o'
     elif type(value) is str:
