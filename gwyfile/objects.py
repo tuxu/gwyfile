@@ -7,7 +7,7 @@ import struct
 import numpy as np
 from collections import OrderedDict
 
-from six import BytesIO
+from six import BytesIO, string_types
 from six.moves import range
 
 
@@ -199,7 +199,7 @@ def guess_typecode(value):
         value = value.item()
     if isinstance(value, GwyObject):
         return 'o'
-    elif type(value) is str:
+    elif isinstance(value, string_types):
         if len(value) == 1:
             return 'c'
         else:
@@ -226,7 +226,8 @@ def guess_typecode(value):
         else:
             raise NotImplementedError
     else:
-        raise NotImplementedError
+        raise NotImplementedError('{}, type: {}'.format(value,
+                                                        type(value)))
 
 
 def serialize_component(key, value, typecode=None):
