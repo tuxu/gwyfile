@@ -257,8 +257,13 @@ def serialize_component(key, value, typecode=None):
         data = [struct.pack('<I', len(value)), ]
         data += [s.encode('utf-8') + b'\0' for s in value]
         buf = b''.join(data)
+    elif typecode == 'O':
+        data = [struct.pack('<I', len(value)), ]
+        data += [obj.serialize() for obj in value]
+        buf = b''.join(data)
     else:
-        raise NotImplementedError
+        raise NotImplementedError('key: {}, typecode: {}, type: {}'
+                                  .format(key, typecode, type(value)))
     return b''.join([
         key.encode('utf-8'), b'\0',
         typecode.encode('utf-8'),
