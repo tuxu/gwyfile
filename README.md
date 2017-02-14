@@ -1,13 +1,9 @@
-gwyfile
-=======
-
-- Author: Tino Wagner <ich@tinowagner.com>
+# gwyfile
 
 A pure Python interface to reading and writing [Gwyddion][gwyddion] files.
 
 
-Usage
------
+## Usage
 
 At the heart of this module is the `GwyObject` class, derived from
 `collections.OrderedDict`. Gwyddion files are just serialized copies of
@@ -41,13 +37,19 @@ The Gwyddion manual has a nice [description of the file format][gwyddion-file].
 See there for further information on object properties.
 
 
-Status
-------
+## Status
 
 `GwyObject` serialization and deserialization should be complete. There
 are specialized subclasses for `GwyDataField` and `GwySIUnit`, but other
 convenience wrappers e.g. for `GwyBrick` are missing.
 
+
+## License
+
+This project is licensed under the MIT license. See [LICENSE.md](LICENSE.md) for
+details.
+
+© 2014-17 [Tino Wagner](http://www.tinowagner.com/)
 
 [gwyddion]: http://www.gwyddion.net
 [gwyddion-file]: http://gwyddion.net/documentation/user-guide-en/gwyfile-format.html
