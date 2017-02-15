@@ -88,20 +88,132 @@ class GwyObject(OrderedDict):
 
 
 class GwyDataField(GwyObject):
-    def __init__(self, data=None, xreal=1.0, yreal=1.0, types=None):
-        super(GwyDataField, self).__init__('GwyDataField', types=types)
+    """GwyDataField.
+
+    Parameters
+    ----------
+    data : np.ndarray, shape=(yres, xres)
+        2-dimensional field data.
+    xreal : float
+        Width in physical units.
+    yreal : float
+        Height in physical units.
+    xoff : float
+        Horizontal offset of top-left corner in physical units.
+    yoff : float
+        Vertical offset of top-left corner in physical units.
+    si_unit_xy : GwySIUnit
+        Lateral unit.
+    si_unit_z : GwySIUnit
+        Data value unit.
+    typecodes : dict
+        Dictionary of component typecodes.
+    """
+    def __init__(self, data,
+                 xreal=1.0, yreal=1.0, xoff=0, yoff=0,
+                 si_unit_xy=None, si_unit_z=None,
+                 typecodes=None):
+        super(GwyDataField, self).__init__('GwyDataField', typecodes=typecodes)
         if isinstance(data, OrderedDict):
             self.update(data)
         else:
-            assert(isinstance(data, np.ndarray) and len(data.shape) == 2)
-            yres, xres = data.shape
-            self['xres'], self['yres'] = xres, yres
-            self['xreal'], self['yreal'] = xreal, yreal
-            self['data'] = data.flatten()
+            assert isinstance(data, np.ndarray) and len(data.shape) == 2
+            self.xreal, self.yreal = xreal, yreal
+            self.xoff, self.yoff = xoff, yoff
+            self.si_unit_xy, self.si_unit_z = si_unit_xy, si_unit_z
+            self.data = data
+        self.typecodes.update({
+            'xres': 'i', 'yres': 'i',
+            'xreal': 'd', 'yreal': 'd',
+            'xoff': 'd', 'yoff': 'd',
+        })
 
-    def get_data(self):
+    @property
+    def data(self):
+        """Container data."""
         xres, yres = self['xres'], self['yres']
         return self['data'].reshape((yres, xres))
+
+    @data.setter
+    def data(self, new_data):
+        assert isinstance(new_data, np.ndarray) and new_data.ndim == 2
+        yres, xres = new_data.shape
+        self['xres'], self['yres'] = xres, yres
+        self['data'] = new_data.flatten()
+
+    @property
+    def xreal(self):
+        """Width in physical units."""
+        return self.get('xreal', None)
+
+    @xreal.setter
+    def xreal(self, width):
+        if width is None:
+            if 'xreal' in self:
+                del self['xreal']
+        else:
+            self['xreal'] = width
+
+    @property
+    def yreal(self):
+        """Height in physical units."""
+        return self.get('yreal', None)
+
+    @yreal.setter
+    def yreal(self, height):
+        if height is None:
+            if 'yreal' in self:
+                del self['yreal']
+        else:
+            self['yreal'] = height
+
+    @property
+    def xoff(self):
+        """Horizontal offset of top-left corner in physical units."""
+        return self.get('xoff', 0)
+
+    @xoff.setter
+    def xoff(self, offset):
+        self['xoff'] = offset
+
+    @property
+    def yoff(self):
+        """Vertical offset of top-left corner in physical units."""
+        return self.get('yoff', 0)
+
+    @yoff.setter
+    def yoff(self, offset):
+        self['yoff'] = offset
+
+    @property
+    def si_unit_xy(self):
+        """Unit of lateral dimensions."""
+        return self.get('si_unit_xy', None)
+
+    @si_unit_xy.setter
+    def si_unit_xy(self, unit):
+        if unit is None:
+            if 'si_unit_xy' in self:
+                del self['si_unit_xy']
+        elif isinstance(unit, string_types):
+            self['si_unit_xy'] = GwySIUnit(unitstr=unit)
+        else:
+            self['si_unit_xy'] = unit
+
+    @property
+    def si_unit_z(self):
+        """Unit of data values."""
+        return self.get('si_unit_z', None)
+
+    @si_unit_z.setter
+    def si_unit_z(self, unit):
+        if unit is None:
+            if 'si_unit_z' in self:
+                del self['si_unit_z']
+        elif isinstance(unit, string_types):
+            self['si_unit_z'] = GwySIUnit(unitstr=unit)
+        else:
+            self['si_unit_z'] = unit
 
 
 class GwySIUnit(GwyObject):
