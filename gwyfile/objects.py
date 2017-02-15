@@ -12,15 +12,15 @@ from six.moves import range
 
 
 class GwyObject(OrderedDict):
-    def __init__(self, name, data=None, types=None):
+    def __init__(self, name, data=None, typecodes=None):
         OrderedDict.__init__(self)
         self.name = name
         # For each object attribute, we (optionally) store its type
-        self.types = {}
+        self.typecodes = {}
         if isinstance(data, dict):
             self.update(data)
-        if isinstance(types, dict):
-            self.types.update(types)
+        if isinstance(typecodes, dict):
+            self.typecodes.update(typecodes)
 
     def __str__(self):
         return '<GwyObject "{name}">({keys})'.format(
@@ -41,19 +41,19 @@ class GwyObject(OrderedDict):
         object_data = buf[pos + 5:pos + 5 + size]
         buf = object_data
         data = OrderedDict()
-        types = {}
+        typecodes = {}
         while len(buf) > 0:
             (component_name, component_data, component_typecode,
              component_size) = component_from_buffer(buf, return_size=True)
             data[component_name] = component_data
-            types[component_name] = component_typecode
+            typecodes[component_name] = component_typecode
             buf = buf[component_size:]
-        if name == 'GwyDataField':
-            obj = GwyDataField(data=data, types=types)
-        elif name == 'GwySIUnit':
-            obj = GwySIUnit(data=data, types=types)
-        else:
-            obj = cls(name, data, types=types)
+        try:
+            # Initialize corresponding Gwyddion object
+            type_class = _gwyddion_types[name]
+            obj = type_class(data=data, typecodes=typecodes)
+        except KeyError:
+            obj = GwyObject(name, data, typecodes=typecodes)
         if return_size:
             return obj, len(name) + 5 + size
         return obj
@@ -69,7 +69,7 @@ class GwyObject(OrderedDict):
         io = BytesIO()
         for k in self.keys():
             try:
-                typecode = self.types[k]
+                typecode = self.typecodes[k]
             except KeyError:
                 typecode = None
             io.write(serialize_component(k, self[k], typecode))
@@ -217,12 +217,12 @@ class GwyDataField(GwyObject):
 
 
 class GwySIUnit(GwyObject):
-    def __init__(self, data=None, unitstr='', types=None):
-        super(GwySIUnit, self).__init__('GwySIUnit', types=types)
+    def __init__(self, data=None, unitstr='', typecodes=None):
+        super(GwySIUnit, self).__init__('GwySIUnit', typecodes=typecodes)
         if isinstance(data, OrderedDict):
             self.update(data)
         else:
-            self.types['unitstr'] = 's'
+            self.typecodes['unitstr'] = 's'
             self.unitstr = unitstr
 
     @property
@@ -381,3 +381,10 @@ def serialize_component(key, value, typecode=None):
         typecode.encode('utf-8'),
         buf
     ])
+
+
+# Type lookup table
+_gwyddion_types = {
+    'GwyDataField': GwyDataField,
+    'GwySIUnit': GwySIUnit,
+}
