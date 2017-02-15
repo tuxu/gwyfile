@@ -1,7 +1,7 @@
-""" Gwyddion object definitions.
+"""Gwyddion object definitions.
 
-    See <http://gwyddion.net/documentation/user-guide-en/gwyfile-format.html>
-    for a specification of Gwyddion native data files.
+See <http://gwyddion.net/documentation/user-guide-en/gwyfile-format.html>
+for a specification of Gwyddion native data files.
 """
 import struct
 import numpy as np
@@ -12,6 +12,17 @@ from six.moves import range
 
 
 class GwyObject(OrderedDict):
+    """GwyObject.
+
+    Parameters
+    ----------
+    name : str
+        Type name.
+    data : dict
+        Dictionary of components.
+    typecodes : dict
+        Dictionary of component typecodes.
+    """
     def __init__(self, name, data=None, typecodes=None):
         OrderedDict.__init__(self)
         self.name = name
@@ -30,10 +41,15 @@ class GwyObject(OrderedDict):
 
     @classmethod
     def frombuffer(cls, buf, return_size=False):
-        """ Interpret a buffer as a serialized GwyObject.
+        """Interpret a buffer as a serialized GwyObject.
 
-        :param return_size: if ``True``, the size of the object within the
-        buffer is returned as well.
+        Parameters
+        ----------
+        buf : buffer_like
+            Buffer.
+        return_size : bool
+            If `True`, the size of the component within the buffer is returned as
+            well.
         """
         pos = buf.find(b'\0')
         name = buf[:pos].decode('utf-8')
@@ -66,6 +82,7 @@ class GwyObject(OrderedDict):
         return cls.frombuffer(data[4:])
 
     def serialize(self):
+        """Return the binary representation."""
         io = BytesIO()
         for k in self.keys():
             try:
@@ -258,10 +275,13 @@ class GwySIUnit(GwyObject):
 
 
 def component_from_buffer(buf, return_size=False):
-    """ Interpret a buffer as a serialized component.
+    """Interpret a buffer as a serialized component.
 
-    :param return_size: if ``True``, the size of the component within
-    the buffer is returned as well.
+    Parameters
+    ----------
+    return_size : bool
+        If `True`, the size of the component within the buffer is returned as
+        well.
     """
     pos = buf.find(b'\0')
     name = buf[:pos].decode('utf-8')
@@ -329,6 +349,7 @@ def component_from_buffer(buf, return_size=False):
 
 
 def guess_typecode(value):
+    """Guess Gwyddion typecode for `value`."""
     if np.isscalar(value) and hasattr(value, 'item'):
         # Seems to be a numpy type -- convert
         value = value.item()
@@ -366,6 +387,17 @@ def guess_typecode(value):
 
 
 def serialize_component(key, value, typecode=None):
+    """Serialize `value` to a Gwyddion component.
+
+    Parameters
+    ----------
+    name : str
+        Component name.
+    value : serializable
+        Data to serialize.
+    typecode : str
+        Type code. If not provided, this is inferred from type(value).
+    """
     if typecode is None:
         typecode = guess_typecode(value)
     if typecode == 'o':
