@@ -1,2 +1,2 @@
-from .objects import GwyObject, GwyDataField, GwySIUnit
+from . import objects
 from . import util
