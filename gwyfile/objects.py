@@ -74,13 +74,6 @@ class GwyObject(OrderedDict):
             return obj, len(name) + 5 + size
         return obj
 
-    @classmethod
-    def fromfile(cls, filename):
-        with open(filename, 'rb') as f:
-            data = f.read()
-        assert(data[:4] == b'GWYP')
-        return cls.frombuffer(data[4:])
-
     def serialize(self):
         """Return the binary representation."""
         io = BytesIO()
@@ -98,10 +91,43 @@ class GwyObject(OrderedDict):
             buf
         ])
 
-    def tofile(self, filename):
-        with open(filename, 'wb') as f:
-            f.write(b'GWYP')
-            f.write(self.serialize())
+    @classmethod
+    def fromfile(cls, file):
+        """Create a GwyObject from the data stored in `file`.
+
+        Parameters
+        ----------
+        file : file or str
+            File object or filename.
+        """
+        if isinstance(file, string_types):
+            with open(file, 'rb') as f:
+                return GwyObject._read_file(f)
+        return GwyObject._read_file(file)
+
+    def tofile(self, file):
+        """Write GwyObject with header to file.
+
+        Parameters
+        ----------
+        file : file or str
+            File object or filename.
+        """
+        if isinstance(file, string_types):
+            with open(file, 'wb') as f:
+                self._write_file(f)
+        else:
+            self._write_file(file)
+
+    @classmethod
+    def _read_file(cls, f):
+        data = f.read()
+        assert data[:4] == b'GWYP'
+        return cls.frombuffer(data[4:])
+
+    def _write_file(self, f):
+        f.write(b'GWYP')
+        f.write(self.serialize())
 
 
 class GwyContainer(GwyObject):
