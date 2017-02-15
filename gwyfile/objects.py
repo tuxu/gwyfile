@@ -87,6 +87,29 @@ class GwyObject(OrderedDict):
             f.write(self.serialize())
 
 
+class GwyContainer(GwyObject):
+    """GwyContainer.
+
+    Parameters
+    ----------
+    data : dict
+        Dictionary of components.
+    typecodes : dict
+        Dictionary of component typecodes.
+    """
+    def __init__(self, data=None, typecodes=None):
+        super(GwyContainer, self).__init__('GwyContainer', data, typecodes)
+
+    @property
+    def filename(self):
+        """Associated container filename."""
+        return self.get('/filename', None)
+
+    @filename.setter
+    def filename(self, name):
+        self['/filename'] = name
+
+
 class GwyDataField(GwyObject):
     """GwyDataField.
 
@@ -385,6 +408,7 @@ def serialize_component(key, value, typecode=None):
 
 # Type lookup table
 _gwyddion_types = {
+    'GwyContainer': GwyContainer,
     'GwyDataField': GwyDataField,
     'GwySIUnit': GwySIUnit,
 }
