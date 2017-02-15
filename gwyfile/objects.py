@@ -22,10 +22,10 @@ class GwyObject(OrderedDict):
         if isinstance(types, dict):
             self.types.update(types)
 
-    def __repr__(self):
-        return '<GwyObject "%s">(%s)' % (
-            self.name,
-            ', '.join("'%s'" % k for k in self.keys())
+    def __str__(self):
+        return '<GwyObject "{name}">({keys})'.format(
+            name=self.name,
+            keys=', '.join("'{}'".format(k) for k in self.keys())
         )
 
     @classmethod
