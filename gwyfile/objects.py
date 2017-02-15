@@ -386,7 +386,7 @@ def guess_typecode(value):
                                                         type(value)))
 
 
-def serialize_component(key, value, typecode=None):
+def serialize_component(name, value, typecode=None):
     """Serialize `value` to a Gwyddion component.
 
     Parameters
@@ -409,7 +409,7 @@ def serialize_component(key, value, typecode=None):
     elif typecode == 'b':
         buf = chr(value).encode('utf-8')
     elif typecode in 'iqd':
-        buf = struct.pack('<%s' % typecode, value)
+        buf = struct.pack('<' + typecode, value)
     elif typecode in 'CIQD':
         typelookup = {
             'C': np.dtype('<S'), 'I': np.dtype('<i4'),
@@ -429,10 +429,10 @@ def serialize_component(key, value, typecode=None):
         data += [obj.serialize() for obj in value]
         buf = b''.join(data)
     else:
-        raise NotImplementedError('key: {}, typecode: {}, type: {}'
-                                  .format(key, typecode, type(value)))
+        raise NotImplementedError('name: {}, typecode: {}, type: {}'
+                                  .format(name, typecode, type(value)))
     return b''.join([
-        key.encode('utf-8'), b'\0',
+        name.encode('utf-8'), b'\0',
         typecode.encode('utf-8'),
         buf
     ])
