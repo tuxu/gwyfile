@@ -4,8 +4,8 @@ See <http://gwyddion.net/documentation/user-guide-en/gwyfile-format.html>
 for a specification of Gwyddion native data files.
 """
 import struct
-import numpy as np
 from collections import OrderedDict
+import numpy as np
 
 from six import BytesIO, string_types
 from six.moves import range
@@ -327,7 +327,7 @@ def component_from_buffer(buf, return_size=False):
         numitems = struct.unpack('<I', buf[pos:pos + 4])[0]
         endpos += 4
         data = []
-        for i in range(numitems):
+        for _ in range(numitems):
             pos = endpos
             endpos = buf.find(b'\0', pos)
             data.append(buf[pos:endpos].decode('utf-8'))
@@ -336,7 +336,7 @@ def component_from_buffer(buf, return_size=False):
         numitems = struct.unpack('<I', buf[pos:pos + 4])[0]
         endpos += 4
         data = []
-        for i in range(numitems):
+        for _ in range(numitems):
             pos = endpos
             objdata, size = GwyObject.frombuffer(buf[pos:], return_size=True)
             data.append(objdata)
