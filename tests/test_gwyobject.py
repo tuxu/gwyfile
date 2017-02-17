@@ -1,7 +1,6 @@
 import os
 import pytest
 import gwyfile
-from gwyfile.objects import GwyObject
 
 
 @pytest.fixture(scope="module")
@@ -11,7 +10,7 @@ def test_data():
             os.path.dirname(os.path.realpath(__file__))
         )
     )
-    return GwyObject.fromfile(filename)
+    return gwyfile.load(filename)
 
 
 def test_datafield(test_data):
