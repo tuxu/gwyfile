@@ -6,6 +6,7 @@ setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     description='Pure Python implementation of the Gwyddion file format',
+    long_description=open('README.rst').read(),
     author='Tino Wagner',
     author_email='ich@tinowagner.com',
     url='https://github.com/tuxu/gwyfile',
