@@ -1,6 +1,18 @@
 gwyfile
 =======
 
+.. image:: https://img.shields.io/pypi/v/gwyfile.svg
+    :target: https://pypi.python.org/pypi/gwyfile
+
+.. image:: https://img.shields.io/pypi/l/gwyfile.svg
+    :target: https://pypi.python.org/pypi/gwyfile
+
+.. image:: https://img.shields.io/pypi/wheel/gwyfile.svg
+    :target: https://pypi.python.org/pypi/gwyfile
+
+.. image:: https://img.shields.io/pypi/pyversions/gwyfile.svg
+    :target: https://pypi.python.org/pypi/gwyfile
+
 A pure Python interface to reading and writing `Gwyddion
 <http://www.gwyddion.net>`_ files.
 
