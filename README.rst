@@ -5,6 +5,14 @@ A pure Python interface to reading and writing `Gwyddion
 <http://www.gwyddion.net>`_ files.
 
 
+Installation
+------------
+
+.. code-block:: console
+
+    $ pip install gwyfile
+
+
 Usage
 -----
 
