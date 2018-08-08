@@ -1,2 +1,3 @@
 include versioneer.py
 include gwyfile/_version.py
+include LICENSE.rst
