@@ -100,6 +100,8 @@ class GwyObject(OrderedDict):
         file : file or str
             File object or filename.
         """
+        if hasattr(type(file), '__fspath__'):
+            file = type(file).__fspath__(file)
         if isinstance(file, string_types):
             with open(file, 'rb') as f:
                 return GwyObject._read_file(f)
@@ -113,6 +115,8 @@ class GwyObject(OrderedDict):
         file : file or str
             File object or filename.
         """
+        if hasattr(type(file), '__fspath__'):
+            file = type(file).__fspath__(file)
         if isinstance(file, string_types):
             with open(file, 'wb') as f:
                 self._write_file(f)
