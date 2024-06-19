@@ -19,6 +19,8 @@ def test_datafield(test_data):
     test_channel = channels['Test']
     data = test_channel.data
     assert data.shape == (128, 128)
+    assert data[0][0] == pytest.approx(0.00082494, 1E-5)
+    assert data[44][33] == pytest.approx(0.00085301, 1E-5)
 
 
 def test_tofile(test_data, tmpdir):
