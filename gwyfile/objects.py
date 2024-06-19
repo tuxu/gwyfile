@@ -348,7 +348,7 @@ def component_from_buffer(buf, return_size=False):
         }
         dtype = typelookup[typecode]
         pos, endpos = endpos, endpos + dtype.itemsize * numitems
-        data = np.fromstring(buf[pos:endpos], dtype=dtype)
+        data = np.frombuffer(buf[pos:endpos], dtype=dtype)
     elif typecode == 'S':
         numitems = struct.unpack('<I', buf[pos:pos + 4])[0]
         endpos += 4
