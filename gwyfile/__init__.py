@@ -1,9 +1,7 @@
 from . import objects
 from . import util
 
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
+__version__ = __import__("importlib.metadata", fromlist=["version"]).version("gwyfile")
 
 
 def load(file_or_filename):

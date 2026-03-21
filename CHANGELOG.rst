@@ -1,6 +1,20 @@
 Change Log
 ##########
 
+0.3.0
+=====
+
+Fixed
+-----
+
+* Replace deprecated ``numpy.fromstring`` with ``numpy.frombuffer`` for
+  compatibility with NumPy 2.x.
+
+Changed
+-------
+
+* Dropped Python 2 support. Requires Python 3.9+.
+
 0.2.0
 =====
 

@@ -5,10 +5,8 @@ for a specification of Gwyddion native data files.
 """
 import struct
 from collections import OrderedDict
+from io import BytesIO
 import numpy as np
-
-from six import BytesIO, string_types
-from six.moves import range
 
 
 class GwyObject(OrderedDict):
@@ -100,7 +98,7 @@ class GwyObject(OrderedDict):
         file : file or str
             File object or filename.
         """
-        if isinstance(file, string_types):
+        if isinstance(file, str):
             with open(file, 'rb') as f:
                 return GwyObject._read_file(f)
         return GwyObject._read_file(file)
@@ -113,7 +111,7 @@ class GwyObject(OrderedDict):
         file : file or str
             File object or filename.
         """
-        if isinstance(file, string_types):
+        if isinstance(file, str):
             with open(file, 'wb') as f:
                 self._write_file(f)
         else:
@@ -261,7 +259,7 @@ class GwyDataField(GwyObject):
         if unit is None:
             if 'si_unit_xy' in self:
                 del self['si_unit_xy']
-        elif isinstance(unit, string_types):
+        elif isinstance(unit, str):
             self['si_unit_xy'] = GwySIUnit(unitstr=unit)
         else:
             self['si_unit_xy'] = unit
@@ -276,7 +274,7 @@ class GwyDataField(GwyObject):
         if unit is None:
             if 'si_unit_z' in self:
                 del self['si_unit_z']
-        elif isinstance(unit, string_types):
+        elif isinstance(unit, str):
             self['si_unit_z'] = GwySIUnit(unitstr=unit)
         else:
             self['si_unit_z'] = unit
@@ -381,7 +379,7 @@ def guess_typecode(value):
         value = value.item()
     if isinstance(value, GwyObject):
         return 'o'
-    elif isinstance(value, string_types):
+    elif isinstance(value, str):
         if len(value) == 1:
             return 'c'
         else:
